@@ -1,0 +1,45 @@
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/700.css';
+@import './styles/tokens.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height);
+  color: var(--color-ink);
+  background: var(--color-surface-alt);
+}
+
+h1,
+h2,
+h3 {
+  line-height: var(--line-height-tight);
+  font-weight: var(--font-weight-bold);
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* Accessibility baseline (constitution XI): Angular Material removes the outline of its buttons and its own
+   focus indicator is not visible, so the shared focus ring is enforced for every focusable control. */
+:is(a, button, [role='button'], [role='combobox'], [role='option'], [tabindex]):focus-visible {
+  outline: 3px solid var(--color-focus) !important;
+  outline-offset: 2px !important;
+}
+
+/* Dialogs: full screen on phones, right-anchored panel on desktop */
+@media (max-width: 599.98px) {
+  .full-screen-dialog .mat-mdc-dialog-surface {
+    border-radius: 0;
+  }
+}

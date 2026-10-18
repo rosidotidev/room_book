@@ -1,0 +1,4 @@
+# Activate with --spring.profiles.active=seed to also run versioned seed scripts from db/seed
+spring:
+  flyway:
+    locations: classpath:db/migration,classpath:db/seed

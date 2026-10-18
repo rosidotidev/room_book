@@ -1,0 +1,83 @@
+/* Design tokens: defined once, never hard-coded in components (constitution X).
+   Mobile-first; breakpoints 600px and 1024px are applied in component CSS via media queries. */
+:root {
+  /* Color: ink/navy for text and navigation, one accent, cool neutral surfaces */
+  --color-ink: #0b1f3a;
+  --color-ink-muted: #44546a;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f3f5f9;
+  --color-surface-sunken: #e8ecf3;
+  --color-divider: #cfd6e2;
+  --color-accent: #0a7c86;
+  --color-accent-strong: #075f67;
+  --color-accent-soft: #dff3f4;
+  --color-accent-contrast: #ffffff;
+  --color-on-ink: #ffffff;
+  --color-on-ink-soft: rgba(255, 255, 255, 0.12);
+
+  /* Status colors (all reach AA as text on white) */
+  --color-success: #15803d;
+  --color-warning: #92400e;
+  --color-warning-soft: #fdf1e3;
+  --color-danger: #b91c1c;
+  --color-danger-soft: #fdecec;
+  --color-inactive: #4b5563;
+  --color-inactive-soft: #eceef2;
+
+  --color-focus: #0a7c86;
+
+  /* Typography: one family, a clear scale */
+  --font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+  --font-size-caption: 0.875rem;
+  --font-size-body: 1rem;
+  --font-size-title: 1.375rem;
+  --font-size-display: 2rem;
+  --line-height: 1.5;
+  --line-height-tight: 1.25;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+
+  /* Spacing (8px grid) */
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 1.5rem;
+  --space-4: 2rem;
+  --space-6: 3rem;
+  --space-8: 4rem;
+
+  /* Shape and depth */
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-pill: 999px;
+  --elevation-1: 0 1px 3px rgba(11, 31, 58, 0.08);
+  --elevation-2: 0 4px 12px rgba(11, 31, 58, 0.1);
+  --border-thin: 1px solid var(--color-divider);
+
+  /* Booking slot states: aliases of the palette above, never new color values */
+  --slot-free-bg: var(--color-surface);
+  --slot-free-ink: var(--color-ink-muted);
+  --slot-booked-bg: var(--color-accent-soft);
+  --slot-booked-ink: var(--color-ink);
+  --slot-own-bg: var(--color-accent);
+  --slot-own-ink: var(--color-accent-contrast);
+  --slot-cancelled-bg: var(--color-inactive-soft);
+  --slot-cancelled-ink: var(--color-inactive);
+  --slot-past-bg: var(--color-surface-sunken);
+  --slot-past-ink: var(--color-ink-muted);
+  --slot-height: 2.75rem;
+
+  /* Interaction and layout */
+  --touch-target: 2.75rem; /* 44px minimum */
+  --content-max-width: 72rem;
+  --side-nav-width: 15rem;
+  --bottom-nav-height: 4rem;
+  --top-bar-height: 3.5rem;
+  --motion-fast: 150ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 0ms;
+  }
+}

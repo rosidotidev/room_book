@@ -1,0 +1,446 @@
+openapi: 3.0.3
+info:
+  title: RoomBook API
+  version: 0.1.0
+  description: >
+    Single source of truth for the RoomBook HTTP API. Changed before any code
+    (constitution I). Later features extend this same file. Every error response
+    is application/problem+json shaped as the Problem schema.
+servers:
+  - url: http://localhost:8080
+paths:
+  /api/health:
+    get:
+      operationId: getHealth
+      summary: Health check
+      tags: [Health]
+      responses:
+        '200':
+          description: Backend is up and the database answered a write and a read
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthReport'
+        '503':
+          description: Backend is up but the database is unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthReport'
+  /api/rooms:
+    get:
+      operationId: listRooms
+      summary: List rooms, optionally filtered
+      description: >
+        Returns every room, including inactive ones. Equipment is matched ignoring
+        letter case and surrounding spaces.
+      tags: [Rooms]
+      parameters:
+        - name: minCapacity
+          in: query
+          required: false
+          description: Only rooms with at least this capacity
+          schema:
+            type: integer
+            minimum: 1
+        - name: equipment
+          in: query
+          required: false
+          description: Only rooms offering this equipment item
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Rooms matching the filters (possibly empty)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Room'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    post:
+      operationId: createRoom
+      summary: Create a room (active by default)
+      tags: [Rooms]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoomInput'
+      responses:
+        '201':
+          description: Room created
+          headers:
+            Location:
+              description: URL of the new room
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Room'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/DuplicateName'
+  /api/rooms/{id}:
+    put:
+      operationId: updateRoom
+      summary: Update name, capacity and equipment of a room
+      tags: [Rooms]
+      parameters:
+        - $ref: '#/components/parameters/RoomId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoomInput'
+      responses:
+        '200':
+          description: Room updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Room'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/DuplicateName'
+  /api/rooms/{id}/active:
+    patch:
+      operationId: setRoomActive
+      summary: Activate or deactivate a room
+      description: >
+        Never deletes anything. The result reports the room's future bookings
+        (empty until bookings exist). Setting the state a room already has is accepted.
+      tags: [Rooms]
+      parameters:
+        - $ref: '#/components/parameters/RoomId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActiveChange'
+      responses:
+        '200':
+          description: New state of the room and its future bookings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomActivationResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/bookings:
+    post:
+      operationId: createBooking
+      summary: Book a room
+      description: >
+        Rules, checked in this order after the fields are present: unknown room (404),
+        deactivated room (422), hours 08:00-20:00 office time Monday to Friday on 15-minute
+        boundaries, same local day, duration of at most 4 hours, end after start, start not
+        before now (400), then overlap with a confirmed booking of the same room (409).
+        Back-to-back bookings are allowed.
+      tags: [Bookings]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingInput'
+      responses:
+        '201':
+          description: Booking confirmed
+          headers:
+            Location:
+              description: URL of the new booking
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/RoomDeactivated'
+    get:
+      operationId: listBookingsByOrganizer
+      summary: Bookings of an organizer, including cancelled ones
+      description: The organizer is matched ignoring letter case and surrounding spaces. Ordered by start time.
+      tags: [Bookings]
+      parameters:
+        - name: organizer
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Bookings of the organizer (possibly empty)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Booking'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /api/bookings/{id}:
+    delete:
+      operationId: cancelBooking
+      summary: Cancel a booking (soft delete)
+      description: >
+        Sets the status to CANCELLED and keeps the booking; the slot becomes free. Allowed while at
+        least 60 minutes remain before the start; cancelling an already cancelled booking is accepted.
+      tags: [Bookings]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: The cancelled booking
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /api/rooms/{id}/availability:
+    get:
+      operationId: getRoomAvailability
+      summary: Confirmed bookings of a room for one day
+      description: The date is an office-local day; bookings are ordered by start time; cancelled bookings are not listed.
+      tags: [Bookings]
+      parameters:
+        - $ref: '#/components/parameters/RoomId'
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Confirmed bookings of the room that day (possibly empty)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Booking'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+components:
+  parameters:
+    RoomId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+  schemas:
+    HealthReport:
+      type: object
+      required: [status, database, time]
+      properties:
+        status:
+          $ref: '#/components/schemas/HealthStatus'
+        database:
+          $ref: '#/components/schemas/HealthStatus'
+        time:
+          type: string
+          format: date-time
+    HealthStatus:
+      type: string
+      enum: [UP, DOWN]
+    Room:
+      type: object
+      required: [id, name, capacity, equipment, active]
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        capacity:
+          type: integer
+          minimum: 1
+        equipment:
+          type: array
+          items:
+            type: string
+        active:
+          type: boolean
+    RoomInput:
+      type: object
+      required: [name, capacity]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        capacity:
+          type: integer
+          minimum: 1
+          maximum: 1000
+        equipment:
+          type: array
+          maxItems: 20
+          items:
+            type: string
+            minLength: 1
+            maxLength: 50
+    ActiveChange:
+      type: object
+      required: [active]
+      properties:
+        active:
+          type: boolean
+    RoomActivationResult:
+      type: object
+      required: [room, futureBookings]
+      properties:
+        room:
+          $ref: '#/components/schemas/Room'
+        futureBookings:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookingSummary'
+    BookingSummary:
+      type: object
+      description: Minimal view of a booking, extended when bookings are introduced
+      required: [id, title, organizer, start, end]
+      properties:
+        id:
+          type: integer
+          format: int64
+        title:
+          type: string
+        organizer:
+          type: string
+        start:
+          type: string
+          format: date-time
+        end:
+          type: string
+          format: date-time
+    BookingStatus:
+      type: string
+      enum: [CONFIRMED, CANCELLED]
+    BookingInput:
+      type: object
+      required: [roomId, title, organizer, start, end]
+      properties:
+        roomId:
+          type: integer
+          format: int64
+        title:
+          type: string
+          minLength: 1
+          maxLength: 100
+        organizer:
+          type: string
+          minLength: 1
+          maxLength: 100
+        start:
+          type: string
+          format: date-time
+          description: With a UTC offset; evaluated in the office time zone
+        end:
+          type: string
+          format: date-time
+    Booking:
+      type: object
+      required: [id, roomId, title, organizer, start, end, status, createdAt]
+      properties:
+        id:
+          type: integer
+          format: int64
+        roomId:
+          type: integer
+          format: int64
+        title:
+          type: string
+        organizer:
+          type: string
+        start:
+          type: string
+          format: date-time
+          description: In the office time zone offset
+        end:
+          type: string
+          format: date-time
+        status:
+          $ref: '#/components/schemas/BookingStatus'
+        createdAt:
+          type: string
+          format: date-time
+    Problem:
+      type: object
+      description: RFC 7807 problem details, served as application/problem+json
+      required: [title, status]
+      properties:
+        type:
+          type: string
+          default: about:blank
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+  responses:
+    BadRequest:
+      description: Invalid input; the detail names the invalid field
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    NotFound:
+      description: Unknown resource
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    DuplicateName:
+      description: Another room already has this name
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Conflict:
+      description: The slot is already taken, or the booking can no longer be cancelled
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    RoomDeactivated:
+      description: The room is deactivated and cannot be booked
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'

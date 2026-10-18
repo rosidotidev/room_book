@@ -1,0 +1,51 @@
+// Angular Material theme driven by the design tokens (tokens.css).
+// Material generates its system variables; the ones that carry the brand are then
+// re-pointed to our tokens, so no color, font or spacing value is defined twice.
+@use '@angular/material' as mat;
+
+html {
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$cyan-palette,
+        theme-type: light,
+      ),
+      typography: (
+        plain-family: 'Inter, Segoe UI, system-ui, sans-serif',
+        brand-family: 'Inter, Segoe UI, system-ui, sans-serif',
+        bold-weight: 700,
+        medium-weight: 500,
+        regular-weight: 400,
+      ),
+      density: 0,
+    )
+  );
+
+  --mat-sys-primary: var(--color-accent);
+  --mat-sys-on-primary: var(--color-accent-contrast);
+  --mat-sys-primary-container: var(--color-accent-soft);
+  --mat-sys-on-primary-container: var(--color-ink);
+  --mat-sys-secondary: var(--color-ink);
+  --mat-sys-on-secondary: var(--color-on-ink);
+  --mat-sys-secondary-container: var(--color-accent-soft);
+  --mat-sys-on-secondary-container: var(--color-ink);
+  --mat-sys-surface: var(--color-surface);
+  --mat-sys-on-surface: var(--color-ink);
+  --mat-sys-on-surface-variant: var(--color-ink-muted);
+  --mat-sys-surface-variant: var(--color-surface-alt);
+  --mat-sys-background: var(--color-surface-alt);
+  --mat-sys-on-background: var(--color-ink);
+  --mat-sys-surface-container: var(--color-surface);
+  --mat-sys-surface-container-low: var(--color-surface);
+  --mat-sys-surface-container-high: var(--color-surface);
+  --mat-sys-surface-container-highest: var(--color-surface-alt);
+  --mat-sys-outline: var(--color-ink-muted);
+  --mat-sys-outline-variant: var(--color-divider);
+  --mat-sys-error: var(--color-danger);
+  --mat-sys-on-error: var(--color-on-ink);
+  --mat-sys-error-container: var(--color-danger-soft);
+  --mat-sys-on-error-container: var(--color-danger);
+  --mat-sys-corner-medium: var(--radius-md);
+  --mat-sys-corner-large: var(--radius-lg);
+  --mat-sys-corner-extra-large: var(--radius-lg);
+}

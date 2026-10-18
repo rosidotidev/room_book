@@ -1,0 +1,19 @@
+# Backend
+backend/data/
+backend/target/
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/src/app/api/
+# Misc
+*.log
+.env*
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.tmp
+# Docs
+docs/
