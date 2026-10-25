@@ -73,6 +73,8 @@ npm start                     # build and start on port 8080 (see the quickstart
 npm run parity                # run both backends and compare them
 ```
 
+The NestJS backend uses its own copy of the database, `backend-nest/data/roombook.db`. Create it once by copying `backend/data/roombook.db`; the service does not create an empty file and refuses to start without it. Full steps: [specs/006-nest-backend-replacement/quickstart.md](specs/006-nest-backend-replacement/quickstart.md).
+
 ## Build and run
 
 Prerequisites: JDK 21, Node.js LTS with npm, Git (Maven is not needed, the wrapper is included).
@@ -119,6 +121,7 @@ npm test                      # unit tests (Vitest)
 | `003-rooms-ui` | Rooms screens (browse, filter, admin management) |
 | `004-bookings-api` | Bookings REST API and booking rules |
 | `005-bookings-ui` | Availability day view, booking form and cancellation |
+| `006-nest-backend-replacement` | Replacement of the Spring Boot backend with the NestJS implementation in `backend-nest/`, with the same contract and business rules, checked by the parity harness |
 
 Each feature folder contains the files produced by the Spec Kit commands:
 
