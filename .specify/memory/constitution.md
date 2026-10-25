@@ -1,3 +1,19 @@
+<!--
+SYNC IMPACT REPORT (temporary, remove before commit)
+Version change: 1.0.0 → 1.1.0 (MINOR)
+Modified principles:
+- V. Versioned Migrations Only: "(Flyway)" replaced by versioned SQL migrations run by an internal runner.
+- VII. Monorepo Layout: root folders now backend-nest/, frontend/, specs/; backend/ kept only during migration.
+Modified sections:
+- Technical Constraints: backend stack changed from Spring Boot/Java 21 to NestJS/Node.js LTS/TypeScript;
+  persistence changed from path backend/data/ to backend-nest/data/ (or configurable) via better-sqlite3.
+- Governance: amendment rationale recorded.
+Added sections: none. Removed sections: none.
+Unchanged principles: I, II, III, IV, VI, VIII, IX, X, XI.
+Deferred TODOs: none.
+Templates: not modified. Dependent specs 001–005 still describe the Spring implementation (history, not rewritten).
+-->
+
 # RoomBook Constitution
 
 ## Core Principles
@@ -20,16 +36,18 @@ All time-dependent logic MUST use an injectable `Clock`. Code MUST NOT call `now
 clock. Tests MUST use a fixed clock so results are deterministic.
 
 ### V. Versioned Migrations Only
-Database schema and seed changes MUST go through versioned migrations (Flyway). Manual or
-ad-hoc schema changes are forbidden.
+Database schema and seed changes MUST go through versioned SQL migrations (`V1__`, `V2__`, ...),
+applied in order by an internal migration runner that records each applied version. No external
+migration framework is used. Manual or ad-hoc schema changes are forbidden.
 
 ### VI. Problem+JSON Errors
 All API errors MUST be returned as `application/problem+json` with a consistent shape, using the
 status codes documented in the contract. The UI MUST present them as readable messages.
 
 ### VII. Monorepo Layout
-The repository is a monorepo with `backend/`, `frontend/` and `specs/` (Spec Kit artifacts and
-contract) at the root; `.specify/` holds the constitution and templates.
+The repository is a monorepo with `backend-nest/`, `frontend/` and `specs/` (Spec Kit artifacts and
+contract) at the root; `.specify/` holds the constitution and templates. During the migration from
+Spring Boot, the legacy `backend/` folder MAY remain at the root; it MUST be removed at cutover.
 
 ### VIII. No Authentication
 Authentication, roles, notifications, recurring bookings, external calendars and multi-site are
@@ -50,9 +68,11 @@ be conveyed by color alone (add a label or icon).
 
 ## Technical Constraints
 
-- Backend: Spring Boot REST on Java 21, layered controller/service/repository.
+- Backend: NestJS REST on Node.js LTS with TypeScript, layered controller/service/repository,
+  located in `backend-nest/`.
 - Frontend: Angular (standalone components).
-- Persistence: SQLite, a single file under `backend/data/`.
+- Persistence: SQLite via `better-sqlite3`, a single file under `backend-nest/data/` or at a
+  configurable path.
 - Time zone and business hours are defined in the specs and applied in the service layer.
 
 ## Development Workflow
@@ -69,4 +89,14 @@ version bump (semantic versioning) and review of dependent specs/plans. All plan
 MUST verify compliance with these principles; deviations MUST be justified in the plan's
 complexity tracking.
 
-**Version**: 1.0.0 | **Ratified**: 2026-10-18 | **Last Amended**: 2026-10-18
+### Amendment History
+
+- **1.1.0 (2026-10-24), MINOR**: Backend migrated from Spring Boot to NestJS to reduce the stack to
+  one language (TypeScript) across backend and frontend tooling and to use the team's Node.js
+  skills. The principles' intent is unchanged: API-first, contract tests, service-layer rules,
+  injectable clock, versioned migrations and monorepo layout remain. Only the named tools changed
+  (Flyway → internal SQL migration runner; `backend/` → `backend-nest/`). Bumped MINOR because no
+  principle was removed or made incompatible in intent; the change is a materially expanded
+  technical constraint and a clarified migration mechanism.
+
+**Version**: 1.1.0 | **Ratified**: 2026-10-18 | **Last Amended**: 2026-10-24

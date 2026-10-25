@@ -1,0 +1,1241 @@
+[
+  {
+    "index": 0,
+    "label": "health",
+    "method": "GET",
+    "path": "/api/health",
+    "expectedStatus": 200,
+    "contentType": "application/json",
+    "bodyText": "{\"status\":\"UP\",\"database\":\"UP\",\"time\":\"2026-10-25T08:52:25.957094400Z\"}"
+  },
+  {
+    "index": 1,
+    "label": "health unknown sub-path",
+    "method": "GET",
+    "path": "/api/health/x",
+    "expectedStatus": 404,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Not Found\",\"status\":404,\"detail\":\"No endpoint GET /api/health/x.\",\"instance\":\"/api/health/x\"}"
+  },
+  {
+    "index": 2,
+    "label": "unknown route",
+    "method": "GET",
+    "path": "/api/nope?x=1",
+    "expectedStatus": 404,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Not Found\",\"status\":404,\"detail\":\"No endpoint GET /api/nope.\",\"instance\":\"/api/nope\"}"
+  },
+  {
+    "index": 3,
+    "label": "rooms list (six demo rooms, inactive included)",
+    "method": "GET",
+    "path": "/api/rooms",
+    "expectedStatus": 200,
+    "contentType": "application/json",
+    "bodyText": "[{\"id\":1,\"name\":\"Aurora\",\"capacity\":20,\"equipment\":[\"Whiteboard\"],\"active\":false},{\"id\":2,\"name\":\"Borealis\",\"capacity\":6,\"equipment\":[\"Projector\",\"Whiteboard\"],\"active\":true},{\"id\":3,\"name\":\"Cirrus\",\"capacity\":8,\"equipment\":[\"Video conferencing\",\"Whiteboard\"],\"active\":true},{\"id\":4,\"name\":\"Delta\",\"capacity\":12,\"equipment\":[\"Projector\",\"Video conferencing\"],\"active\":true},{\"id\":5,\"name\":\"Everest\",\"capacity\":20,\"equipment\":[\"Projector\",\"Video conferencing\",\"Whiteboard\"],\"active\":true},{\"id\":6,\"name\":\"Fjord\",\"capacity\":2,\"equipment\":[],\"active\":true}]"
+  },
+  {
+    "index": 4,
+    "label": "rooms minCapacity filter",
+    "method": "GET",
+    "path": "/api/rooms?minCapacity=10",
+    "expectedStatus": 200,
+    "contentType": "application/json",
+    "bodyText": "[{\"id\":1,\"name\":\"Aurora\",\"capacity\":20,\"equipment\":[\"Whiteboard\"],\"active\":false},{\"id\":4,\"name\":\"Delta\",\"capacity\":12,\"equipment\":[\"Projector\",\"Video conferencing\"],\"active\":true},{\"id\":5,\"name\":\"Everest\",\"capacity\":20,\"equipment\":[\"Projector\",\"Video conferencing\",\"Whiteboard\"],\"active\":true}]"
+  },
+  {
+    "index": 5,
+    "label": "rooms minCapacity=0 rejected",
+    "method": "GET",
+    "path": "/api/rooms?minCapacity=0",
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Invalid room\",\"status\":400,\"detail\":\"minCapacity must be a whole number greater than zero.\",\"instance\":\"/api/rooms\"}"
+  },
+  {
+    "index": 6,
+    "label": "rooms minCapacity empty",
+    "method": "GET",
+    "path": "/api/rooms?minCapacity=",
+    "expectedStatus": 200,
+    "contentType": "application/json",
+    "bodyText": "[{\"id\":1,\"name\":\"Aurora\",\"capacity\":20,\"equipment\":[\"Whiteboard\"],\"active\":false},{\"id\":2,\"name\":\"Borealis\",\"capacity\":6,\"equipment\":[\"Projector\",\"Whiteboard\"],\"active\":true},{\"id\":3,\"name\":\"Cirrus\",\"capacity\":8,\"equipment\":[\"Video conferencing\",\"Whiteboard\"],\"active\":true},{\"id\":4,\"name\":\"Delta\",\"capacity\":12,\"equipment\":[\"Projector\",\"Video conferencing\"],\"active\":true},{\"id\":5,\"name\":\"Everest\",\"capacity\":20,\"equipment\":[\"Projector\",\"Video conferencing\",\"Whiteboard\"],\"active\":true},{\"id\":6,\"name\":\"Fjord\",\"capacity\":2,\"equipment\":[],\"active\":true}]"
+  },
+  {
+    "index": 7,
+    "label": "rooms collection with DELETE",
+    "method": "DELETE",
+    "path": "/api/rooms",
+    "expectedStatus": 405,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Method Not Allowed\",\"status\":405,\"detail\":\"Method 'DELETE' is not supported.\",\"instance\":\"/api/rooms\"}"
+  },
+  {
+    "index": 8,
+    "label": "create room without body",
+    "method": "POST",
+    "path": "/api/rooms",
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"Failed to read request\",\"instance\":\"/api/rooms\"}"
+  },
+  {
+    "index": 9,
+    "label": "rooms minCapacity not a number",
+    "method": "GET",
+    "path": "/api/rooms?minCapacity=abc",
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"Failed to convert 'minCapacity' with value: 'abc'\",\"instance\":\"/api/rooms\"}"
+  },
+  {
+    "index": 10,
+    "label": "rooms equipment filter ignores case and spaces",
+    "method": "GET",
+    "path": "/api/rooms?equipment=%20PROJECTOR%20",
+    "expectedStatus": 200,
+    "contentType": "application/json",
+    "bodyText": "[{\"id\":2,\"name\":\"Borealis\",\"capacity\":6,\"equipment\":[\"Projector\",\"Whiteboard\"],\"active\":true},{\"id\":4,\"name\":\"Delta\",\"capacity\":12,\"equipment\":[\"Projector\",\"Video conferencing\"],\"active\":true},{\"id\":5,\"name\":\"Everest\",\"capacity\":20,\"equipment\":[\"Projector\",\"Video conferencing\",\"Whiteboard\"],\"active\":true}]"
+  },
+  {
+    "index": 11,
+    "label": "rooms equipment filter no match",
+    "method": "GET",
+    "path": "/api/rooms?equipment=Nothing",
+    "expectedStatus": 200,
+    "contentType": "application/json",
+    "bodyText": "[]"
+  },
+  {
+    "index": 12,
+    "label": "create room with duplicate equipment spelling",
+    "method": "POST",
+    "path": "/api/rooms",
+    "body": {
+      "name": "Harbor",
+      "capacity": 4,
+      "equipment": [
+        "Whiteboard",
+        "whiteboard ",
+        "TV"
+      ]
+    },
+    "expectedStatus": 201,
+    "contentType": "application/json",
+    "bodyText": "{\"id\":7,\"name\":\"Harbor\",\"capacity\":4,\"equipment\":[\"Whiteboard\",\"TV\"],\"active\":true}"
+  },
+  {
+    "index": 13,
+    "label": "create room without name",
+    "method": "POST",
+    "path": "/api/rooms",
+    "body": {
+      "capacity": 4
+    },
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Invalid room\",\"status\":400,\"detail\":\"name is required.\",\"instance\":\"/api/rooms\"}"
+  },
+  {
+    "index": 14,
+    "label": "create room capacity 0",
+    "method": "POST",
+    "path": "/api/rooms",
+    "body": {
+      "name": "Kiln",
+      "capacity": 0
+    },
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Invalid room\",\"status\":400,\"detail\":\"capacity must be a whole number greater than zero.\",\"instance\":\"/api/rooms\"}"
+  },
+  {
+    "index": 15,
+    "label": "create room capacity 1001",
+    "method": "POST",
+    "path": "/api/rooms",
+    "body": {
+      "name": "Kiln",
+      "capacity": 1001
+    },
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Invalid room\",\"status\":400,\"detail\":\"capacity must be at most 1000.\",\"instance\":\"/api/rooms\"}"
+  },
+  {
+    "index": 16,
+    "label": "create room capacity as text",
+    "method": "POST",
+    "path": "/api/rooms",
+    "body": {
+      "name": "Kiln",
+      "capacity": "abc"
+    },
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"Failed to read request\",\"instance\":\"/api/rooms\"}"
+  },
+  {
+    "index": 17,
+    "label": "create room duplicate name (case and spaces)",
+    "method": "POST",
+    "path": "/api/rooms",
+    "body": {
+      "name": "aurora ",
+      "capacity": 5
+    },
+    "expectedStatus": 409,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Room name already exists\",\"status\":409,\"detail\":\"A room named 'aurora' already exists.\",\"instance\":\"/api/rooms\"}"
+  },
+  {
+    "index": 18,
+    "label": "create room name 101 characters",
+    "method": "POST",
+    "path": "/api/rooms",
+    "body": {
+      "name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "capacity": 5
+    },
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Invalid room\",\"status\":400,\"detail\":\"name must be at most 100 characters.\",\"instance\":\"/api/rooms\"}"
+  },
+  {
+    "index": 19,
+    "label": "create room with 21 equipment items",
+    "method": "POST",
+    "path": "/api/rooms",
+    "body": {
+      "name": "Kiln",
+      "capacity": 5,
+      "equipment": [
+        "e01",
+        "e02",
+        "e03",
+        "e04",
+        "e05",
+        "e06",
+        "e07",
+        "e08",
+        "e09",
+        "e10",
+        "e11",
+        "e12",
+        "e13",
+        "e14",
+        "e15",
+        "e16",
+        "e17",
+        "e18",
+        "e19",
+        "e20",
+        "e21"
+      ]
+    },
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Invalid room\",\"status\":400,\"detail\":\"equipment must have at most 20 items.\",\"instance\":\"/api/rooms\"}"
+  },
+  {
+    "index": 20,
+    "label": "create room with empty equipment item",
+    "method": "POST",
+    "path": "/api/rooms",
+    "body": {
+      "name": "Kiln",
+      "capacity": 5,
+      "equipment": [
+        ""
+      ]
+    },
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Invalid room\",\"status\":400,\"detail\":\"equipment items must not be empty.\",\"instance\":\"/api/rooms\"}"
+  },
+  {
+    "index": 21,
+    "label": "create room with 51-character equipment item",
+    "method": "POST",
+    "path": "/api/rooms",
+    "body": {
+      "name": "Kiln",
+      "capacity": 5,
+      "equipment": [
+        "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      ]
+    },
+    "expectedStatus": 201,
+    "contentType": "application/json",
+    "bodyText": "{\"id\":8,\"name\":\"Kiln\",\"capacity\":5,\"equipment\":[\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"],\"active\":true}"
+  },
+  {
+    "index": 22,
+    "label": "create room malformed JSON",
+    "method": "POST",
+    "path": "/api/rooms",
+    "rawBody": "{bad",
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"Failed to read request\",\"instance\":\"/api/rooms\"}"
+  },
+  {
+    "index": 23,
+    "label": "create room with equipment list",
+    "method": "POST",
+    "path": "/api/rooms",
+    "body": {
+      "name": "Kiln",
+      "capacity": 5,
+      "equipment": [
+        "Projector"
+      ]
+    },
+    "expectedStatus": 409,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Room name already exists\",\"status\":409,\"detail\":\"A room named 'Kiln' already exists.\",\"instance\":\"/api/rooms\"}"
+  },
+  {
+    "index": 24,
+    "label": "update room renames and changes equipment",
+    "method": "PUT",
+    "path": "/api/rooms/2",
+    "body": {
+      "name": "Borealis Lab",
+      "capacity": 7,
+      "equipment": [
+        "Projector"
+      ]
+    },
+    "expectedStatus": 200,
+    "contentType": "application/json",
+    "bodyText": "{\"id\":2,\"name\":\"Borealis Lab\",\"capacity\":7,\"equipment\":[\"Projector\"],\"active\":true}"
+  },
+  {
+    "index": 25,
+    "label": "update room to a name used by another room",
+    "method": "PUT",
+    "path": "/api/rooms/2",
+    "body": {
+      "name": "cirrus",
+      "capacity": 7
+    },
+    "expectedStatus": 409,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Room name already exists\",\"status\":409,\"detail\":\"A room named 'cirrus' already exists.\",\"instance\":\"/api/rooms/2\"}"
+  },
+  {
+    "index": 26,
+    "label": "update room keeps its own name",
+    "method": "PUT",
+    "path": "/api/rooms/2",
+    "body": {
+      "name": "Borealis",
+      "capacity": 6
+    },
+    "expectedStatus": 200,
+    "contentType": "application/json",
+    "bodyText": "{\"id\":2,\"name\":\"Borealis\",\"capacity\":6,\"equipment\":[],\"active\":true}"
+  },
+  {
+    "index": 27,
+    "label": "update room capacity 0",
+    "method": "PUT",
+    "path": "/api/rooms/2",
+    "body": {
+      "name": "Borealis",
+      "capacity": 0
+    },
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Invalid room\",\"status\":400,\"detail\":\"capacity must be a whole number greater than zero.\",\"instance\":\"/api/rooms/2\"}"
+  },
+  {
+    "index": 28,
+    "label": "update room without name",
+    "method": "PUT",
+    "path": "/api/rooms/2",
+    "body": {
+      "capacity": 6
+    },
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Invalid room\",\"status\":400,\"detail\":\"name is required.\",\"instance\":\"/api/rooms/2\"}"
+  },
+  {
+    "index": 29,
+    "label": "update room malformed JSON",
+    "method": "PUT",
+    "path": "/api/rooms/2",
+    "rawBody": "[",
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"Failed to read request\",\"instance\":\"/api/rooms/2\"}"
+  },
+  {
+    "index": 30,
+    "label": "update unknown room",
+    "method": "PUT",
+    "path": "/api/rooms/99",
+    "body": {
+      "name": "Ghost",
+      "capacity": 3
+    },
+    "expectedStatus": 404,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Room not found\",\"status\":404,\"detail\":\"Room 99 does not exist.\",\"instance\":\"/api/rooms/99\"}"
+  },
+  {
+    "index": 31,
+    "label": "update room with non-numeric id",
+    "method": "PUT",
+    "path": "/api/rooms/abc",
+    "body": {
+      "name": "Ghost",
+      "capacity": 3
+    },
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"Failed to convert 'id' with value: 'abc'\",\"instance\":\"/api/rooms/abc\"}"
+  },
+  {
+    "index": 32,
+    "label": "get room with non-numeric id",
+    "method": "GET",
+    "path": "/api/rooms/abc",
+    "expectedStatus": 405,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Method Not Allowed\",\"status\":405,\"detail\":\"Method 'GET' is not supported.\",\"instance\":\"/api/rooms/abc\"}"
+  },
+  {
+    "index": 33,
+    "label": "bookings: standup 2031-03-03 09:00 (Monday)",
+    "method": "POST",
+    "path": "/api/bookings",
+    "body": {
+      "roomId": 2,
+      "title": "Standup",
+      "organizer": "Ana",
+      "start": "2031-03-03T09:00:00+01:00",
+      "end": "2031-03-03T10:00:00+01:00"
+    },
+    "expectedStatus": 201,
+    "contentType": "application/json",
+    "bodyText": "{\"id\":4,\"roomId\":2,\"title\":\"Standup\",\"organizer\":\"Ana\",\"start\":\"2031-03-03T09:00:00+01:00\",\"end\":\"2031-03-03T10:00:00+01:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"}"
+  },
+  {
+    "index": 34,
+    "label": "bookings: same slot again",
+    "method": "POST",
+    "path": "/api/bookings",
+    "body": {
+      "roomId": 2,
+      "title": "Clash",
+      "organizer": "Roberto",
+      "start": "2031-03-03T09:00:00+01:00",
+      "end": "2031-03-03T10:00:00+01:00"
+    },
+    "expectedStatus": 409,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Slot already booked\",\"status\":409,\"detail\":\"The room is already booked from 09:00 to 10:00 on Mon 3 Mar.\",\"instance\":\"/api/bookings\"}"
+  },
+  {
+    "index": 35,
+    "label": "bookings: back-to-back slot",
+    "method": "POST",
+    "path": "/api/bookings",
+    "body": {
+      "roomId": 2,
+      "title": "Back to back",
+      "organizer": "Ana",
+      "start": "2031-03-03T10:00:00+01:00",
+      "end": "2031-03-03T11:00:00+01:00"
+    },
+    "expectedStatus": 201,
+    "contentType": "application/json",
+    "bodyText": "{\"id\":5,\"roomId\":2,\"title\":\"Back to back\",\"organizer\":\"Ana\",\"start\":\"2031-03-03T10:00:00+01:00\",\"end\":\"2031-03-03T11:00:00+01:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"}"
+  },
+  {
+    "index": 36,
+    "label": "bookings: partial overlap",
+    "method": "POST",
+    "path": "/api/bookings",
+    "body": {
+      "roomId": 2,
+      "title": "Overlap",
+      "organizer": "Roberto",
+      "start": "2031-03-03T09:30:00+01:00",
+      "end": "2031-03-03T10:30:00+01:00"
+    },
+    "expectedStatus": 409,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Slot already booked\",\"status\":409,\"detail\":\"The room is already booked from 09:00 to 10:00 on Mon 3 Mar.\",\"instance\":\"/api/bookings\"}"
+  },
+  {
+    "index": 37,
+    "label": "bookings: 19:45 to 20:00 (last allowed end)",
+    "method": "POST",
+    "path": "/api/bookings",
+    "body": {
+      "roomId": 2,
+      "title": "Late",
+      "organizer": "Roberto",
+      "start": "2031-03-03T19:45:00+01:00",
+      "end": "2031-03-03T20:00:00+01:00"
+    },
+    "expectedStatus": 201,
+    "contentType": "application/json",
+    "bodyText": "{\"id\":6,\"roomId\":2,\"title\":\"Late\",\"organizer\":\"Roberto\",\"start\":\"2031-03-03T19:45:00+01:00\",\"end\":\"2031-03-03T20:00:00+01:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"}"
+  },
+  {
+    "index": 38,
+    "label": "bookings: end 20:15 after closing",
+    "method": "POST",
+    "path": "/api/bookings",
+    "body": {
+      "roomId": 2,
+      "title": "Too late",
+      "organizer": "Ana",
+      "start": "2031-03-03T19:45:00+01:00",
+      "end": "2031-03-03T20:15:00+01:00"
+    },
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Booking not allowed\",\"status\":400,\"detail\":\"Bookings must start and end between 08:00 and 20:00.\",\"instance\":\"/api/bookings\"}"
+  },
+  {
+    "index": 39,
+    "label": "bookings: start 07:45 before opening",
+    "method": "POST",
+    "path": "/api/bookings",
+    "body": {
+      "roomId": 2,
+      "title": "Early",
+      "organizer": "Ana",
+      "start": "2031-03-03T07:45:00+01:00",
+      "end": "2031-03-03T08:30:00+01:00"
+    },
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Booking not allowed\",\"status\":400,\"detail\":\"Bookings must start and end between 08:00 and 20:00.\",\"instance\":\"/api/bookings\"}"
+  },
+  {
+    "index": 40,
+    "label": "bookings: end equal to start",
+    "method": "POST",
+    "path": "/api/bookings",
+    "body": {
+      "roomId": 2,
+      "title": "Zero",
+      "organizer": "Ana",
+      "start": "2031-03-03T09:00:00+01:00",
+      "end": "2031-03-03T09:00:00+01:00"
+    },
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Booking not allowed\",\"status\":400,\"detail\":\"A booking must end after it starts.\",\"instance\":\"/api/bookings\"}"
+  },
+  {
+    "index": 41,
+    "label": "bookings: 4 h 15 min",
+    "method": "POST",
+    "path": "/api/bookings",
+    "body": {
+      "roomId": 2,
+      "title": "Long",
+      "organizer": "Ana",
+      "start": "2031-03-03T08:00:00+01:00",
+      "end": "2031-03-03T12:15:00+01:00"
+    },
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Booking not allowed\",\"status\":400,\"detail\":\"A booking can last at most 4 hours.\",\"instance\":\"/api/bookings\"}"
+  },
+  {
+    "index": 42,
+    "label": "bookings: exactly 4 h",
+    "method": "POST",
+    "path": "/api/bookings",
+    "body": {
+      "roomId": 5,
+      "title": "Full morning",
+      "organizer": "Roberto",
+      "start": "2031-03-03T08:00:00+01:00",
+      "end": "2031-03-03T12:00:00+01:00"
+    },
+    "expectedStatus": 201,
+    "contentType": "application/json",
+    "bodyText": "{\"id\":7,\"roomId\":5,\"title\":\"Full morning\",\"organizer\":\"Roberto\",\"start\":\"2031-03-03T08:00:00+01:00\",\"end\":\"2031-03-03T12:00:00+01:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"}"
+  },
+  {
+    "index": 43,
+    "label": "bookings: start minute 10 (not a quarter hour)",
+    "method": "POST",
+    "path": "/api/bookings",
+    "body": {
+      "roomId": 3,
+      "title": "Odd minute",
+      "organizer": "Ana",
+      "start": "2031-03-03T09:10:00+01:00",
+      "end": "2031-03-03T10:00:00+01:00"
+    },
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Booking not allowed\",\"status\":400,\"detail\":\"Bookings must start and end on a 15-minute boundary (:00, :15, :30, :45).\",\"instance\":\"/api/bookings\"}"
+  },
+  {
+    "index": 44,
+    "label": "bookings: start with seconds and milliseconds",
+    "method": "POST",
+    "path": "/api/bookings",
+    "body": {
+      "roomId": 3,
+      "title": "Millis",
+      "organizer": "Ana",
+      "start": "2031-03-03T11:00:00.500+01:00",
+      "end": "2031-03-03T12:00:00+01:00"
+    },
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Booking not allowed\",\"status\":400,\"detail\":\"Bookings must start and end on a 15-minute boundary (:00, :15, :30, :45).\",\"instance\":\"/api/bookings\"}"
+  },
+  {
+    "index": 45,
+    "label": "bookings: Saturday",
+    "method": "POST",
+    "path": "/api/bookings",
+    "body": {
+      "roomId": 3,
+      "title": "Weekend",
+      "organizer": "Ana",
+      "start": "2031-03-08T10:00:00+01:00",
+      "end": "2031-03-08T11:00:00+01:00"
+    },
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Booking not allowed\",\"status\":400,\"detail\":\"Bookings are only possible from Monday to Friday.\",\"instance\":\"/api/bookings\"}"
+  },
+  {
+    "index": 46,
+    "label": "bookings: Sunday",
+    "method": "POST",
+    "path": "/api/bookings",
+    "body": {
+      "roomId": 3,
+      "title": "Weekend",
+      "organizer": "Ana",
+      "start": "2031-03-09T10:00:00+01:00",
+      "end": "2031-03-09T11:00:00+01:00"
+    },
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Booking not allowed\",\"status\":400,\"detail\":\"Bookings are only possible from Monday to Friday.\",\"instance\":\"/api/bookings\"}"
+  },
+  {
+    "index": 47,
+    "label": "bookings: crosses midnight",
+    "method": "POST",
+    "path": "/api/bookings",
+    "body": {
+      "roomId": 3,
+      "title": "Night",
+      "organizer": "Ana",
+      "start": "2031-03-03T23:00:00+01:00",
+      "end": "2031-03-04T00:30:00+01:00"
+    },
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Booking not allowed\",\"status\":400,\"detail\":\"Bookings must start and end between 08:00 and 20:00.\",\"instance\":\"/api/bookings\"}"
+  },
+  {
+    "index": 48,
+    "label": "bookings: Friday in UTC but Saturday in Rome",
+    "method": "POST",
+    "path": "/api/bookings",
+    "body": {
+      "roomId": 3,
+      "title": "Zone",
+      "organizer": "Ana",
+      "start": "2031-03-07T23:30:00Z",
+      "end": "2031-03-08T00:30:00Z"
+    },
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Booking not allowed\",\"status\":400,\"detail\":\"Bookings are only possible from Monday to Friday.\",\"instance\":\"/api/bookings\"}"
+  },
+  {
+    "index": 49,
+    "label": "bookings: UTC instant converted to office time",
+    "method": "POST",
+    "path": "/api/bookings",
+    "body": {
+      "roomId": 3,
+      "title": "UTC input",
+      "organizer": "Ana",
+      "start": "2031-03-03T08:00:00Z",
+      "end": "2031-03-03T09:00:00Z"
+    },
+    "expectedStatus": 201,
+    "contentType": "application/json",
+    "bodyText": "{\"id\":8,\"roomId\":3,\"title\":\"UTC input\",\"organizer\":\"Ana\",\"start\":\"2031-03-03T09:00:00+01:00\",\"end\":\"2031-03-03T10:00:00+01:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"}"
+  },
+  {
+    "index": 50,
+    "label": "bookings: start in the past",
+    "method": "POST",
+    "path": "/api/bookings",
+    "body": {
+      "roomId": 2,
+      "title": "History",
+      "organizer": "Ana",
+      "start": "2020-01-06T09:00:00+01:00",
+      "end": "2020-01-06T10:00:00+01:00"
+    },
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Booking not allowed\",\"status\":400,\"detail\":\"A booking cannot start in the past.\",\"instance\":\"/api/bookings\"}"
+  },
+  {
+    "index": 51,
+    "label": "bookings: DST day (Monday 2031-03-31, CEST)",
+    "method": "POST",
+    "path": "/api/bookings",
+    "body": {
+      "roomId": 2,
+      "title": "DST spring",
+      "organizer": "Ana",
+      "start": "2031-03-31T09:00:00+02:00",
+      "end": "2031-03-31T10:00:00+02:00"
+    },
+    "expectedStatus": 201,
+    "contentType": "application/json",
+    "bodyText": "{\"id\":9,\"roomId\":2,\"title\":\"DST spring\",\"organizer\":\"Ana\",\"start\":\"2031-03-31T09:00:00+02:00\",\"end\":\"2031-03-31T10:00:00+02:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"}"
+  },
+  {
+    "index": 52,
+    "label": "bookings: DST day Sunday 2031-03-30",
+    "method": "POST",
+    "path": "/api/bookings",
+    "body": {
+      "roomId": 2,
+      "title": "DST Sunday",
+      "organizer": "Ana",
+      "start": "2031-03-30T09:00:00+02:00",
+      "end": "2031-03-30T10:00:00+02:00"
+    },
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Booking not allowed\",\"status\":400,\"detail\":\"Bookings are only possible from Monday to Friday.\",\"instance\":\"/api/bookings\"}"
+  },
+  {
+    "index": 53,
+    "label": "bookings: autumn Monday 2031-10-27 (CET)",
+    "method": "POST",
+    "path": "/api/bookings",
+    "body": {
+      "roomId": 2,
+      "title": "Autumn",
+      "organizer": "Ana",
+      "start": "2031-10-27T09:00:00+01:00",
+      "end": "2031-10-27T10:00:00+01:00"
+    },
+    "expectedStatus": 201,
+    "contentType": "application/json",
+    "bodyText": "{\"id\":10,\"roomId\":2,\"title\":\"Autumn\",\"organizer\":\"Ana\",\"start\":\"2031-10-27T09:00:00+01:00\",\"end\":\"2031-10-27T10:00:00+01:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"}"
+  },
+  {
+    "index": 54,
+    "label": "bookings: unknown room",
+    "method": "POST",
+    "path": "/api/bookings",
+    "body": {
+      "roomId": 99,
+      "title": "Nowhere",
+      "organizer": "Ana",
+      "start": "2031-03-03T09:00:00+01:00",
+      "end": "2031-03-03T10:00:00+01:00"
+    },
+    "expectedStatus": 404,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Room not found\",\"status\":404,\"detail\":\"Room 99 does not exist.\",\"instance\":\"/api/bookings\"}"
+  },
+  {
+    "index": 55,
+    "label": "bookings: missing title",
+    "method": "POST",
+    "path": "/api/bookings",
+    "body": {
+      "roomId": 2,
+      "organizer": "Ana",
+      "start": "2031-03-03T09:00:00+01:00",
+      "end": "2031-03-03T10:00:00+01:00"
+    },
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Booking not allowed\",\"status\":400,\"detail\":\"title is required.\",\"instance\":\"/api/bookings\"}"
+  },
+  {
+    "index": 56,
+    "label": "bookings: blank organizer",
+    "method": "POST",
+    "path": "/api/bookings",
+    "body": {
+      "roomId": 2,
+      "title": "Blank",
+      "organizer": "   ",
+      "start": "2031-03-03T09:00:00+01:00",
+      "end": "2031-03-03T10:00:00+01:00"
+    },
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Booking not allowed\",\"status\":400,\"detail\":\"organizer is required.\",\"instance\":\"/api/bookings\"}"
+  },
+  {
+    "index": 57,
+    "label": "bookings: missing roomId",
+    "method": "POST",
+    "path": "/api/bookings",
+    "body": {
+      "title": "Room",
+      "organizer": "Ana",
+      "start": "2031-03-03T09:00:00+01:00",
+      "end": "2031-03-03T10:00:00+01:00"
+    },
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Booking not allowed\",\"status\":400,\"detail\":\"roomId is required.\",\"instance\":\"/api/bookings\"}"
+  },
+  {
+    "index": 58,
+    "label": "bookings: missing end",
+    "method": "POST",
+    "path": "/api/bookings",
+    "body": {
+      "roomId": 2,
+      "title": "No end",
+      "organizer": "Ana",
+      "start": "2031-03-03T09:00:00+01:00"
+    },
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Booking not allowed\",\"status\":400,\"detail\":\"end is required.\",\"instance\":\"/api/bookings\"}"
+  },
+  {
+    "index": 59,
+    "label": "bookings: start without offset",
+    "method": "POST",
+    "path": "/api/bookings",
+    "body": {
+      "roomId": 2,
+      "title": "Bad time",
+      "organizer": "Ana",
+      "start": "2031-03-03 09:00",
+      "end": "2031-03-03T10:00:00+01:00"
+    },
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"Failed to read request\",\"instance\":\"/api/bookings\"}"
+  },
+  {
+    "index": 60,
+    "label": "bookings: malformed JSON",
+    "method": "POST",
+    "path": "/api/bookings",
+    "rawBody": "{\"roomId\":",
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"Failed to read request\",\"instance\":\"/api/bookings\"}"
+  },
+  {
+    "index": 61,
+    "label": "bookings: standing booking in room 4 for deactivation test",
+    "method": "POST",
+    "path": "/api/bookings",
+    "body": {
+      "roomId": 4,
+      "title": "Delta sync",
+      "organizer": "Ana",
+      "start": "2031-03-03T14:00:00+01:00",
+      "end": "2031-03-03T15:00:00+01:00"
+    },
+    "expectedStatus": 201,
+    "contentType": "application/json",
+    "bodyText": "{\"id\":11,\"roomId\":4,\"title\":\"Delta sync\",\"organizer\":\"Ana\",\"start\":\"2031-03-03T14:00:00+01:00\",\"end\":\"2031-03-03T15:00:00+01:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"}"
+  },
+  {
+    "index": 62,
+    "label": "bookings: booking in room 5 on 2031-03-04",
+    "method": "POST",
+    "path": "/api/bookings",
+    "body": {
+      "roomId": 5,
+      "title": "Tuesday",
+      "organizer": "Roberto",
+      "start": "2031-03-04T10:00:00+01:00",
+      "end": "2031-03-04T11:00:00+01:00"
+    },
+    "expectedStatus": 201,
+    "contentType": "application/json",
+    "bodyText": "{\"id\":12,\"roomId\":5,\"title\":\"Tuesday\",\"organizer\":\"Roberto\",\"start\":\"2031-03-04T10:00:00+01:00\",\"end\":\"2031-03-04T11:00:00+01:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"}"
+  },
+  {
+    "index": 63,
+    "label": "deactivate room 4 (lists its future booking)",
+    "method": "PATCH",
+    "path": "/api/rooms/4/active",
+    "body": {
+      "active": false
+    },
+    "expectedStatus": 200,
+    "contentType": "application/json",
+    "bodyText": "{\"room\":{\"id\":4,\"name\":\"Delta\",\"capacity\":12,\"equipment\":[\"Projector\",\"Video conferencing\"],\"active\":false},\"futureBookings\":[{\"id\":11,\"title\":\"Delta sync\",\"organizer\":\"Ana\",\"start\":\"2031-03-03T14:00:00+01:00\",\"end\":\"2031-03-03T15:00:00+01:00\"}]}"
+  },
+  {
+    "index": 64,
+    "label": "booking in deactivated room 4",
+    "method": "POST",
+    "path": "/api/bookings",
+    "body": {
+      "roomId": 4,
+      "title": "Blocked",
+      "organizer": "Ana",
+      "start": "2031-03-04T10:00:00+01:00",
+      "end": "2031-03-04T11:00:00+01:00"
+    },
+    "expectedStatus": 422,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Room not available\",\"status\":422,\"detail\":\"The room 'Delta' is deactivated and cannot be booked.\",\"instance\":\"/api/bookings\"}"
+  },
+  {
+    "index": 65,
+    "label": "reactivate room 4",
+    "method": "PATCH",
+    "path": "/api/rooms/4/active",
+    "body": {
+      "active": true
+    },
+    "expectedStatus": 200,
+    "contentType": "application/json",
+    "bodyText": "{\"room\":{\"id\":4,\"name\":\"Delta\",\"capacity\":12,\"equipment\":[\"Projector\",\"Video conferencing\"],\"active\":true},\"futureBookings\":[{\"id\":11,\"title\":\"Delta sync\",\"organizer\":\"Ana\",\"start\":\"2031-03-03T14:00:00+01:00\",\"end\":\"2031-03-03T15:00:00+01:00\"}]}"
+  },
+  {
+    "index": 66,
+    "label": "set active to current state",
+    "method": "PATCH",
+    "path": "/api/rooms/4/active",
+    "body": {
+      "active": true
+    },
+    "expectedStatus": 200,
+    "contentType": "application/json",
+    "bodyText": "{\"room\":{\"id\":4,\"name\":\"Delta\",\"capacity\":12,\"equipment\":[\"Projector\",\"Video conferencing\"],\"active\":true},\"futureBookings\":[{\"id\":11,\"title\":\"Delta sync\",\"organizer\":\"Ana\",\"start\":\"2031-03-03T14:00:00+01:00\",\"end\":\"2031-03-03T15:00:00+01:00\"}]}"
+  },
+  {
+    "index": 67,
+    "label": "deactivate room 6",
+    "method": "PATCH",
+    "path": "/api/rooms/6/active",
+    "body": {
+      "active": false
+    },
+    "expectedStatus": 200,
+    "contentType": "application/json",
+    "bodyText": "{\"room\":{\"id\":6,\"name\":\"Fjord\",\"capacity\":2,\"equipment\":[],\"active\":false},\"futureBookings\":[]}"
+  },
+  {
+    "index": 68,
+    "label": "active as string true",
+    "method": "PATCH",
+    "path": "/api/rooms/6/active",
+    "body": {
+      "active": "true"
+    },
+    "expectedStatus": 200,
+    "contentType": "application/json",
+    "bodyText": "{\"room\":{\"id\":6,\"name\":\"Fjord\",\"capacity\":2,\"equipment\":[],\"active\":true},\"futureBookings\":[]}"
+  },
+  {
+    "index": 69,
+    "label": "active as unrecognised string",
+    "method": "PATCH",
+    "path": "/api/rooms/6/active",
+    "body": {
+      "active": "maybe"
+    },
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"Failed to read request\",\"instance\":\"/api/rooms/6/active\"}"
+  },
+  {
+    "index": 70,
+    "label": "active missing",
+    "method": "PATCH",
+    "path": "/api/rooms/6/active",
+    "body": {},
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Invalid room\",\"status\":400,\"detail\":\"active is required and must be true or false.\",\"instance\":\"/api/rooms/6/active\"}"
+  },
+  {
+    "index": 71,
+    "label": "activate unknown room",
+    "method": "PATCH",
+    "path": "/api/rooms/99/active",
+    "body": {
+      "active": true
+    },
+    "expectedStatus": 404,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Room not found\",\"status\":404,\"detail\":\"Room 99 does not exist.\",\"instance\":\"/api/rooms/99/active\"}"
+  },
+  {
+    "index": 72,
+    "label": "activate room 6 again",
+    "method": "PATCH",
+    "path": "/api/rooms/6/active",
+    "body": {
+      "active": true
+    },
+    "expectedStatus": 200,
+    "contentType": "application/json",
+    "bodyText": "{\"room\":{\"id\":6,\"name\":\"Fjord\",\"capacity\":2,\"equipment\":[],\"active\":true},\"futureBookings\":[]}"
+  },
+  {
+    "index": 73,
+    "label": "activate with non-numeric id",
+    "method": "PATCH",
+    "path": "/api/rooms/abc/active",
+    "body": {
+      "active": true
+    },
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"Failed to convert 'id' with value: 'abc'\",\"instance\":\"/api/rooms/abc/active\"}"
+  },
+  {
+    "index": 74,
+    "label": "bookings list for Ana (cancelled included)",
+    "method": "GET",
+    "path": "/api/bookings?organizer=Ana",
+    "expectedStatus": 200,
+    "contentType": "application/json",
+    "bodyText": "[{\"id\":2,\"roomId\":2,\"title\":\"devops meeting\",\"organizer\":\"Ana\",\"start\":\"2026-10-19T08:00:00+02:00\",\"end\":\"2026-10-19T09:30:00+02:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-18T16:34:57+02:00\"},{\"id\":1,\"roomId\":1,\"title\":\"E2E planning\",\"organizer\":\"Ana\",\"start\":\"2026-10-19T10:00:00+02:00\",\"end\":\"2026-10-19T11:00:00+02:00\",\"status\":\"CANCELLED\",\"createdAt\":\"2026-10-18T16:17:55+02:00\"},{\"id\":4,\"roomId\":2,\"title\":\"Standup\",\"organizer\":\"Ana\",\"start\":\"2031-03-03T09:00:00+01:00\",\"end\":\"2031-03-03T10:00:00+01:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"},{\"id\":8,\"roomId\":3,\"title\":\"UTC input\",\"organizer\":\"Ana\",\"start\":\"2031-03-03T09:00:00+01:00\",\"end\":\"2031-03-03T10:00:00+01:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"},{\"id\":5,\"roomId\":2,\"title\":\"Back to back\",\"organizer\":\"Ana\",\"start\":\"2031-03-03T10:00:00+01:00\",\"end\":\"2031-03-03T11:00:00+01:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"},{\"id\":11,\"roomId\":4,\"title\":\"Delta sync\",\"organizer\":\"Ana\",\"start\":\"2031-03-03T14:00:00+01:00\",\"end\":\"2031-03-03T15:00:00+01:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"},{\"id\":9,\"roomId\":2,\"title\":\"DST spring\",\"organizer\":\"Ana\",\"start\":\"2031-03-31T09:00:00+02:00\",\"end\":\"2031-03-31T10:00:00+02:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"},{\"id\":10,\"roomId\":2,\"title\":\"Autumn\",\"organizer\":\"Ana\",\"start\":\"2031-10-27T09:00:00+01:00\",\"end\":\"2031-10-27T10:00:00+01:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"}]"
+  },
+  {
+    "index": 75,
+    "label": "bookings list ignores case and spaces",
+    "method": "GET",
+    "path": "/api/bookings?organizer=%20ANA%20",
+    "expectedStatus": 200,
+    "contentType": "application/json",
+    "bodyText": "[{\"id\":2,\"roomId\":2,\"title\":\"devops meeting\",\"organizer\":\"Ana\",\"start\":\"2026-10-19T08:00:00+02:00\",\"end\":\"2026-10-19T09:30:00+02:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-18T16:34:57+02:00\"},{\"id\":1,\"roomId\":1,\"title\":\"E2E planning\",\"organizer\":\"Ana\",\"start\":\"2026-10-19T10:00:00+02:00\",\"end\":\"2026-10-19T11:00:00+02:00\",\"status\":\"CANCELLED\",\"createdAt\":\"2026-10-18T16:17:55+02:00\"},{\"id\":4,\"roomId\":2,\"title\":\"Standup\",\"organizer\":\"Ana\",\"start\":\"2031-03-03T09:00:00+01:00\",\"end\":\"2031-03-03T10:00:00+01:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"},{\"id\":8,\"roomId\":3,\"title\":\"UTC input\",\"organizer\":\"Ana\",\"start\":\"2031-03-03T09:00:00+01:00\",\"end\":\"2031-03-03T10:00:00+01:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"},{\"id\":5,\"roomId\":2,\"title\":\"Back to back\",\"organizer\":\"Ana\",\"start\":\"2031-03-03T10:00:00+01:00\",\"end\":\"2031-03-03T11:00:00+01:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"},{\"id\":11,\"roomId\":4,\"title\":\"Delta sync\",\"organizer\":\"Ana\",\"start\":\"2031-03-03T14:00:00+01:00\",\"end\":\"2031-03-03T15:00:00+01:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"},{\"id\":9,\"roomId\":2,\"title\":\"DST spring\",\"organizer\":\"Ana\",\"start\":\"2031-03-31T09:00:00+02:00\",\"end\":\"2031-03-31T10:00:00+02:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"},{\"id\":10,\"roomId\":2,\"title\":\"Autumn\",\"organizer\":\"Ana\",\"start\":\"2031-10-27T09:00:00+01:00\",\"end\":\"2031-10-27T10:00:00+01:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"}]"
+  },
+  {
+    "index": 76,
+    "label": "bookings list for Roberto",
+    "method": "GET",
+    "path": "/api/bookings?organizer=Roberto",
+    "expectedStatus": 200,
+    "contentType": "application/json",
+    "bodyText": "[{\"id\":3,\"roomId\":1,\"title\":\"Meeting tra Architetti\",\"organizer\":\"Roberto\",\"start\":\"2026-10-19T08:00:00+02:00\",\"end\":\"2026-10-19T09:15:00+02:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-18T17:08:08+02:00\"},{\"id\":7,\"roomId\":5,\"title\":\"Full morning\",\"organizer\":\"Roberto\",\"start\":\"2031-03-03T08:00:00+01:00\",\"end\":\"2031-03-03T12:00:00+01:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"},{\"id\":6,\"roomId\":2,\"title\":\"Late\",\"organizer\":\"Roberto\",\"start\":\"2031-03-03T19:45:00+01:00\",\"end\":\"2031-03-03T20:00:00+01:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"},{\"id\":12,\"roomId\":5,\"title\":\"Tuesday\",\"organizer\":\"Roberto\",\"start\":\"2031-03-04T10:00:00+01:00\",\"end\":\"2031-03-04T11:00:00+01:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"}]"
+  },
+  {
+    "index": 77,
+    "label": "bookings list for unknown organizer",
+    "method": "GET",
+    "path": "/api/bookings?organizer=Nobody",
+    "expectedStatus": 200,
+    "contentType": "application/json",
+    "bodyText": "[]"
+  },
+  {
+    "index": 78,
+    "label": "bookings list with empty organizer",
+    "method": "GET",
+    "path": "/api/bookings?organizer=",
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Booking not allowed\",\"status\":400,\"detail\":\"organizer is required.\",\"instance\":\"/api/bookings\"}"
+  },
+  {
+    "index": 79,
+    "label": "bookings list without organizer",
+    "method": "GET",
+    "path": "/api/bookings",
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"Required parameter 'organizer' is not present.\",\"instance\":\"/api/bookings\"}"
+  },
+  {
+    "index": 80,
+    "label": "availability room 2 on 2031-03-03",
+    "method": "GET",
+    "path": "/api/rooms/2/availability?date=2031-03-03",
+    "expectedStatus": 200,
+    "contentType": "application/json",
+    "bodyText": "[{\"id\":4,\"roomId\":2,\"title\":\"Standup\",\"organizer\":\"Ana\",\"start\":\"2031-03-03T09:00:00+01:00\",\"end\":\"2031-03-03T10:00:00+01:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"},{\"id\":5,\"roomId\":2,\"title\":\"Back to back\",\"organizer\":\"Ana\",\"start\":\"2031-03-03T10:00:00+01:00\",\"end\":\"2031-03-03T11:00:00+01:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"},{\"id\":6,\"roomId\":2,\"title\":\"Late\",\"organizer\":\"Roberto\",\"start\":\"2031-03-03T19:45:00+01:00\",\"end\":\"2031-03-03T20:00:00+01:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"}]"
+  },
+  {
+    "index": 81,
+    "label": "availability room 2 on an empty day",
+    "method": "GET",
+    "path": "/api/rooms/2/availability?date=2031-03-04",
+    "expectedStatus": 200,
+    "contentType": "application/json",
+    "bodyText": "[]"
+  },
+  {
+    "index": 82,
+    "label": "availability room 1 on 2026-10-19 (cancelled excluded)",
+    "method": "GET",
+    "path": "/api/rooms/1/availability?date=2026-10-19",
+    "expectedStatus": 200,
+    "contentType": "application/json",
+    "bodyText": "[{\"id\":3,\"roomId\":1,\"title\":\"Meeting tra Architetti\",\"organizer\":\"Roberto\",\"start\":\"2026-10-19T08:00:00+02:00\",\"end\":\"2026-10-19T09:15:00+02:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-18T17:08:08+02:00\"}]"
+  },
+  {
+    "index": 83,
+    "label": "availability room 2 on DST day",
+    "method": "GET",
+    "path": "/api/rooms/2/availability?date=2031-03-31",
+    "expectedStatus": 200,
+    "contentType": "application/json",
+    "bodyText": "[{\"id\":9,\"roomId\":2,\"title\":\"DST spring\",\"organizer\":\"Ana\",\"start\":\"2031-03-31T09:00:00+02:00\",\"end\":\"2031-03-31T10:00:00+02:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"}]"
+  },
+  {
+    "index": 84,
+    "label": "availability room 2 on autumn day",
+    "method": "GET",
+    "path": "/api/rooms/2/availability?date=2031-10-27",
+    "expectedStatus": 200,
+    "contentType": "application/json",
+    "bodyText": "[{\"id\":10,\"roomId\":2,\"title\":\"Autumn\",\"organizer\":\"Ana\",\"start\":\"2031-10-27T09:00:00+01:00\",\"end\":\"2031-10-27T10:00:00+01:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"}]"
+  },
+  {
+    "index": 85,
+    "label": "availability with impossible date",
+    "method": "GET",
+    "path": "/api/rooms/2/availability?date=2026-13-01",
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"Failed to convert 'date' with value: '2026-13-01'\",\"instance\":\"/api/rooms/2/availability\"}"
+  },
+  {
+    "index": 86,
+    "label": "availability with non-date",
+    "method": "GET",
+    "path": "/api/rooms/2/availability?date=abc",
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"Failed to convert 'date' with value: 'abc'\",\"instance\":\"/api/rooms/2/availability\"}"
+  },
+  {
+    "index": 87,
+    "label": "availability without date",
+    "method": "GET",
+    "path": "/api/rooms/2/availability",
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"Required parameter 'date' is not present.\",\"instance\":\"/api/rooms/2/availability\"}"
+  },
+  {
+    "index": 88,
+    "label": "availability with empty date",
+    "method": "GET",
+    "path": "/api/rooms/2/availability?date=",
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"Required parameter 'date' is not present.\",\"instance\":\"/api/rooms/2/availability\"}"
+  },
+  {
+    "index": 89,
+    "label": "availability unknown room",
+    "method": "GET",
+    "path": "/api/rooms/99/availability?date=2031-03-03",
+    "expectedStatus": 404,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Room not found\",\"status\":404,\"detail\":\"Room 99 does not exist.\",\"instance\":\"/api/rooms/99/availability\"}"
+  },
+  {
+    "index": 90,
+    "label": "cancel already cancelled booking (past)",
+    "method": "DELETE",
+    "path": "/api/bookings/1",
+    "expectedStatus": 200,
+    "contentType": "application/json",
+    "bodyText": "{\"id\":1,\"roomId\":1,\"title\":\"E2E planning\",\"organizer\":\"Ana\",\"start\":\"2026-10-19T10:00:00+02:00\",\"end\":\"2026-10-19T11:00:00+02:00\",\"status\":\"CANCELLED\",\"createdAt\":\"2026-10-18T16:17:55+02:00\"}"
+  },
+  {
+    "index": 91,
+    "label": "cancel booking that started in the past",
+    "method": "DELETE",
+    "path": "/api/bookings/2",
+    "expectedStatus": 409,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Too late to cancel\",\"status\":409,\"detail\":\"A booking can only be cancelled until one hour before it starts.\",\"instance\":\"/api/bookings/2\"}"
+  },
+  {
+    "index": 92,
+    "label": "cancel unknown booking",
+    "method": "DELETE",
+    "path": "/api/bookings/999",
+    "expectedStatus": 404,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Booking not found\",\"status\":404,\"detail\":\"Booking 999 does not exist.\",\"instance\":\"/api/bookings/999\"}"
+  },
+  {
+    "index": 93,
+    "label": "cancel with non-numeric id",
+    "method": "DELETE",
+    "path": "/api/bookings/x",
+    "expectedStatus": 400,
+    "contentType": "application/problem+json",
+    "bodyText": "{\"type\":\"about:blank\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"Failed to convert 'id' with value: 'x'\",\"instance\":\"/api/bookings/x\"}"
+  },
+  {
+    "index": 94,
+    "label": "cancel far-ahead booking",
+    "method": "DELETE",
+    "path": "/api/bookings/4",
+    "expectedStatus": 200,
+    "contentType": "application/json",
+    "bodyText": "{\"id\":4,\"roomId\":2,\"title\":\"Standup\",\"organizer\":\"Ana\",\"start\":\"2031-03-03T09:00:00+01:00\",\"end\":\"2031-03-03T10:00:00+01:00\",\"status\":\"CANCELLED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"}"
+  },
+  {
+    "index": 95,
+    "label": "cancel the same booking again",
+    "method": "DELETE",
+    "path": "/api/bookings/4",
+    "expectedStatus": 200,
+    "contentType": "application/json",
+    "bodyText": "{\"id\":4,\"roomId\":2,\"title\":\"Standup\",\"organizer\":\"Ana\",\"start\":\"2031-03-03T09:00:00+01:00\",\"end\":\"2031-03-03T10:00:00+01:00\",\"status\":\"CANCELLED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"}"
+  },
+  {
+    "index": 96,
+    "label": "bookings list after cancel",
+    "method": "GET",
+    "path": "/api/bookings?organizer=Ana",
+    "expectedStatus": 200,
+    "contentType": "application/json",
+    "bodyText": "[{\"id\":2,\"roomId\":2,\"title\":\"devops meeting\",\"organizer\":\"Ana\",\"start\":\"2026-10-19T08:00:00+02:00\",\"end\":\"2026-10-19T09:30:00+02:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-18T16:34:57+02:00\"},{\"id\":1,\"roomId\":1,\"title\":\"E2E planning\",\"organizer\":\"Ana\",\"start\":\"2026-10-19T10:00:00+02:00\",\"end\":\"2026-10-19T11:00:00+02:00\",\"status\":\"CANCELLED\",\"createdAt\":\"2026-10-18T16:17:55+02:00\"},{\"id\":4,\"roomId\":2,\"title\":\"Standup\",\"organizer\":\"Ana\",\"start\":\"2031-03-03T09:00:00+01:00\",\"end\":\"2031-03-03T10:00:00+01:00\",\"status\":\"CANCELLED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"},{\"id\":8,\"roomId\":3,\"title\":\"UTC input\",\"organizer\":\"Ana\",\"start\":\"2031-03-03T09:00:00+01:00\",\"end\":\"2031-03-03T10:00:00+01:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"},{\"id\":5,\"roomId\":2,\"title\":\"Back to back\",\"organizer\":\"Ana\",\"start\":\"2031-03-03T10:00:00+01:00\",\"end\":\"2031-03-03T11:00:00+01:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"},{\"id\":11,\"roomId\":4,\"title\":\"Delta sync\",\"organizer\":\"Ana\",\"start\":\"2031-03-03T14:00:00+01:00\",\"end\":\"2031-03-03T15:00:00+01:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"},{\"id\":9,\"roomId\":2,\"title\":\"DST spring\",\"organizer\":\"Ana\",\"start\":\"2031-03-31T09:00:00+02:00\",\"end\":\"2031-03-31T10:00:00+02:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"},{\"id\":10,\"roomId\":2,\"title\":\"Autumn\",\"organizer\":\"Ana\",\"start\":\"2031-10-27T09:00:00+01:00\",\"end\":\"2031-10-27T10:00:00+01:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"}]"
+  },
+  {
+    "index": 97,
+    "label": "availability after cancel",
+    "method": "GET",
+    "path": "/api/rooms/2/availability?date=2031-03-03",
+    "expectedStatus": 200,
+    "contentType": "application/json",
+    "bodyText": "[{\"id\":5,\"roomId\":2,\"title\":\"Back to back\",\"organizer\":\"Ana\",\"start\":\"2031-03-03T10:00:00+01:00\",\"end\":\"2031-03-03T11:00:00+01:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"},{\"id\":6,\"roomId\":2,\"title\":\"Late\",\"organizer\":\"Roberto\",\"start\":\"2031-03-03T19:45:00+01:00\",\"end\":\"2031-03-03T20:00:00+01:00\",\"status\":\"CONFIRMED\",\"createdAt\":\"2026-10-25T09:52:26+01:00\"}]"
+  },
+  {
+    "index": 98,
+    "label": "rooms create Harbor done, list again",
+    "method": "GET",
+    "path": "/api/rooms",
+    "expectedStatus": 200,
+    "contentType": "application/json",
+    "bodyText": "[{\"id\":1,\"name\":\"Aurora\",\"capacity\":20,\"equipment\":[\"Whiteboard\"],\"active\":false},{\"id\":2,\"name\":\"Borealis\",\"capacity\":6,\"equipment\":[],\"active\":true},{\"id\":3,\"name\":\"Cirrus\",\"capacity\":8,\"equipment\":[\"Video conferencing\",\"Whiteboard\"],\"active\":true},{\"id\":4,\"name\":\"Delta\",\"capacity\":12,\"equipment\":[\"Projector\",\"Video conferencing\"],\"active\":true},{\"id\":5,\"name\":\"Everest\",\"capacity\":20,\"equipment\":[\"Projector\",\"Video conferencing\",\"Whiteboard\"],\"active\":true},{\"id\":6,\"name\":\"Fjord\",\"capacity\":2,\"equipment\":[],\"active\":true},{\"id\":7,\"name\":\"Harbor\",\"capacity\":4,\"equipment\":[\"Whiteboard\",\"TV\"],\"active\":true},{\"id\":8,\"name\":\"Kiln\",\"capacity\":5,\"equipment\":[\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"],\"active\":true}]"
+  }
+]
